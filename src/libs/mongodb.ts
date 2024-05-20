@@ -12,6 +12,7 @@ const dbConnect = async () => {
     console.log("Database Connection established".green);
   } catch (error) {
     console.log("Error Connecting the Database ~ ".red);
+    process.exit();
   }
 };
 

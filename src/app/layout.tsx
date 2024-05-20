@@ -1,18 +1,12 @@
 import ModalCtxProvider from "@/ctx/modals.ctx";
-import "@/styles/globals.css";
-
 import { Inter } from "next/font/google";
+import "@/styles/globals.css";
+import QueryClientProvider from "@/components/query-client";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
 });
-
-export const metadata = {
-  title: "Server Info by <shahzaibalam231@gmail.com>",
-  description:
-    "You can Monitor the server traffic and health and analyze your server.",
-};
 
 export default function RootLayout({
   children,
@@ -21,11 +15,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`font-sans ${inter.variable}`}>{
-        <ModalCtxProvider>
-          {children}
-        </ModalCtxProvider>
-      }</body>
+      <body className={`font-sans min-h-screen relative w-screen ${inter.variable}`}>
+        <QueryClientProvider >
+          <ModalCtxProvider>
+            {children}
+          </ModalCtxProvider>
+        </QueryClientProvider>
+      </body>
     </html>
   );
 }

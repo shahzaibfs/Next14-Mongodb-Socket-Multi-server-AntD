@@ -83,6 +83,8 @@ class SocketManager {
           await this.commonSocketEvListners(socket);
           await this.privateSocketEvListners();
         } catch (error) {
+          // Just in case. if directly use and somethign went wrong.
+          // Close the connection .
           console.error("Error Happend :", error);
           socket.disconnect(true);
         }
@@ -93,22 +95,27 @@ class SocketManager {
     }
   }
   private async commonSocketEvListners(socket: SessionSocket) {
-    try {
-      socket.on("disconnect", async () => {
+    socket.on("disconnect", async () => {
+      try {
         if (!socket.userId || !this.io) {
-          throw Error("Either userId or Io object is missing!");
+          throw new Error("Either userId or Io object is missing!");
         }
-        const matchingSockets = await this.io.in(socket?.userId).fetchSockets();
+        const matchingSockets = await this.io.in(socket.userId).fetchSockets();
         const isDisconnected = matchingSockets.length === 0;
+
+        console.log(`Disconnecting => `.red+`${socket.userId} | => (${socket.id})`);
+
         if (isDisconnected) {
           socket.broadcast.emit("user disconnected", socket.userId);
-          socket.disconnect();
         }
-      });
-    } catch (error) {
-      throw error;
-    }
+
+        socket.disconnect(true);
+      } catch (error) {
+        console.error("Error during disconnect:", error);
+      }
+    });
   }
+
   private async maintainSession(socket: SessionSocket) {
     try {
       if (!socket.userId)

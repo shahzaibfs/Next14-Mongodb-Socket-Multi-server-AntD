@@ -1,6 +1,5 @@
 import dbConnect from "@/libs/mongodb";
 import { type NextRequest, NextResponse } from "next/server";
-import MetrixObserver from "@/libs/metrix";
 
 type Middleware = (req: NextRequest) => Promise<NextRequest | NextResponse>;
 
@@ -25,8 +24,12 @@ export function ApiHandler(
       return corsResponse();
     }
     await dbConnect();
-    MetrixObserver.start(5000)
-    // ============== Middleware Parsing ....
+
+    /**
+     * Run All the Middlewares Incoming from the ApiHnadler....
+     * TODO: ERROR Management.
+     * TODO: Need to test. 
+     */
     for (const middleware of middlewares) {
       const result = await middleware(req);
       if (result instanceof NextResponse) {
