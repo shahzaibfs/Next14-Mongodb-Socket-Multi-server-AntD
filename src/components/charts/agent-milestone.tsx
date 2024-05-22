@@ -3,9 +3,10 @@ import * as d3 from "d3";
 import { Popover } from "antd";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
 import { endOfMonth, format, startOfMonth } from "date-fns";
+import classNames from "classnames";
 
 interface ProcessedSvg {
     releasedAmount: number[];
@@ -49,10 +50,13 @@ interface ProcessedSvg {
     };
 }
 
-function AgentMilestone() {
+function AgentMilestone({ classNames, children }: {
+    children?: ReactNode,
+    classNames?: string
+}) {
     const [processedSvg, setProcessedSvg] = useState<ProcessedSvg | null>(null);
     const [ref, { height, width }] = useMeasure();
-
+    console.log({ height, width })
     useEffect(() => {
         initD3Data();
     }, [height, width]);
@@ -161,140 +165,179 @@ function AgentMilestone() {
         setProcessedSvg(processedSvg);
     }
     return (
-        <div className="min-w-screen overflow-auto" style={{ height: 300 }}>
-            <svg ref={ref} width={"100%"} height={"100%"} className="min-w-[768px]">
-                {processedSvg && (
-                    <>
-                        {processedSvg.XAxis.map((tick, idx) => {
-                            return (
-                                <g key={tick.text.label}>
-                                    {tick.lines && (
-                                        <>
-                                            {tick.lines.map((line) => {
-                                                return (
-                                                    <motion.line
-                                                        key={line.x1}
-                                                        x1={line.x1}
-                                                        y1={line.y1}
-                                                        x2={line.x2}
-                                                        y2={line.y2}
-                                                        className="stroke-slate-400"
-                                                        style={{ strokeDasharray: "10 5" }}
-                                                        initial={{ opacity: 0, strokeDasharray: "0" }}
-                                                        animate={{ opacity: 1, strokeDasharray: "10 5" }}
-                                                        transition={{ duration: 0.4 }}
-                                                    />
-                                                );
-                                            })}
-                                        </>
-                                    )}
-                                    <motion.text
-                                        textAnchor="middle"
-                                        x={tick.amount.x}
-                                        y={tick.amount.y}
-                                        initial={{ opacity: 0, y: -20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.5, duration: 0.4 }}
-                                        fill={"#715d5d"}
+        <div className={`grid ${classNames}`}>
+            <div className="min-w-full overflow-auto w-full h-full" >
+                <svg ref={ref} width={"100%"} height={"100%"} style={{ minHeight: 300, minWidth: 768 }}>
+                    {processedSvg && (
+                        <>
+                            {processedSvg.XAxis.map((tick, idx) => {
+                                return (
+                                    <g key={tick.text.label}>
+                                        {tick.lines && (
+                                            <>
+                                                {tick.lines.map((line) => {
+                                                    return (
+                                                        <motion.line
+                                                            key={line.x1}
+                                                            x1={line.x1}
+                                                            y1={line.y1}
+                                                            x2={line.x2}
+                                                            y2={line.y2}
+                                                            className="stroke-slate-400"
+                                                            style={{ strokeDasharray: "10 5" }}
+                                                            initial={{ opacity: 0, strokeDasharray: "0" }}
+                                                            animate={{ opacity: 1, strokeDasharray: "10 5" }}
+                                                            transition={{ duration: 0.4 }}
+                                                        />
+                                                    );
+                                                })}
+                                            </>
+                                        )}
+                                        <motion.text
+                                            textAnchor="middle"
+                                            x={tick.amount.x}
+                                            y={tick.amount.y}
+                                            initial={{ opacity: 0, y: -20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.5, duration: 0.4 }}
+                                            fill={"#715d5d"}
 
-                                    >
-                                        {tick.amount.label}
-                                    </motion.text>
+                                        >
+                                            {tick.amount.label}
+                                        </motion.text>
+                                        <motion.text
+                                            textAnchor="middle"
+                                            x={tick.text.x}
+                                            y={tick.text.y}
+                                            initial={{ opacity: 0, y: -20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.5, duration: 0.4 }}
+                                        >
+                                            {tick.text.label}
+                                        </motion.text>
+                                        <motion.text
+                                            textAnchor="middle"
+                                            x={tick.milestone.x}
+                                            y={tick.milestone.y}
+                                            initial={{ opacity: 0, y: -20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.5, duration: 0.4 }}
+                                            fill={"#715d5d"}
+                                        >
+                                            {tick.milestone.label}
+                                        </motion.text>
+                                        <motion.text
+                                            textAnchor="middle"
+                                            x={tick.releasedAmount.x}
+                                            y={tick.releasedAmount.y}
+                                            initial={{ opacity: 0, y: -20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.5, duration: 0.4 }}
+                                            color={"#111"}
+                                        >
+                                            Released: {tick.releasedAmount.label}
+                                        </motion.text>
+                                    </g>
+                                );
+                            })}
+                            <motion.line
+                                x1="0"
+                                y1={processedSvg.yScale}
+                                y2={processedSvg.yScale}
+                                className="stroke-slate-400"
+                                style={{ strokeDasharray: "10 5" }}
+                                initial={{ opacity: 0, strokeDasharray: "0", x2: 0 }}
+                                animate={{
+                                    opacity: 1,
+                                    strokeDasharray: "10 5",
+                                    x2: processedSvg.DIMENSIONS.width,
+                                }}
+                                transition={{ duration: 0.4 }}
+                            />
+                            <motion.rect
+                                height={processedSvg.rectSize}
+                                x="0"
+                                y={processedSvg.yMiddle}
+                                rx="20"
+                                ry="20"
+                                fill="#cdcdce21"
+                                initial={{ opacity: 0, width: 0 }}
+                                animate={{ opacity: 1, width: processedSvg.DIMENSIONS.width }}
+                                transition={{ duration: 0.4, delay: 0.4 }}
+                            />
+                            <Popover
+                                overlayClassName="max-w-sm"
+                                content={
+                                    <p>
+                                        Total Released:$2000 <br />
+                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui
+                                        praesentium sapiente, cupiditate vel natus accusantium
+                                        officia at soluta fuga et?
+                                    </p>
+                                }
+                            >
+                                <g>
+                                    <motion.rect
+                                        height={processedSvg.rectSize}
+                                        x={processedSvg?.releasedAmount?.[0]}
+                                        y={processedSvg.yMiddle}
+                                        rx="10"
+                                        ry="10"
+                                        fill="#44ce44"
+                                        initial={{ opacity: 0, width: 0 }}
+                                        animate={{
+                                            opacity: 1,
+                                            width:
+                                                Number(processedSvg.releasedAmount?.[1]) -
+                                                Number(processedSvg?.releasedAmount[0]),
+                                        }}
+                                        transition={{ duration: 0.4, delay: 0.8 }}
+                                    />
                                     <motion.text
+                                        // TODO: Instead We can use Lerp here
+                                        x={
+                                            (Number(processedSvg.releasedAmount?.[1]) -
+                                                Number(processedSvg?.releasedAmount[0])) /
+                                            2 +
+                                            Number(processedSvg?.releasedAmount[0])
+                                        }
+                                        y={processedSvg.yScale}
+                                        fontFamily="Arial"
+                                        fontSize="16"
+                                        fill="black"
                                         textAnchor="middle"
-                                        x={tick.text.x}
-                                        y={tick.text.y}
                                         initial={{ opacity: 0, y: -20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.5, duration: 0.4 }}
+                                        transition={{ duration: 0.4, delay: 1.2 }}
                                     >
-                                        {tick.text.label}
-                                    </motion.text>
-                                    <motion.text
-                                        textAnchor="middle"
-                                        x={tick.milestone.x}
-                                        y={tick.milestone.y}
-                                        initial={{ opacity: 0, y: -20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.5, duration: 0.4 }}
-                                        fill={"#715d5d"}
-                                    >
-                                        {tick.milestone.label}
-                                    </motion.text>
-                                    <motion.text
-                                        textAnchor="middle"
-                                        x={tick.releasedAmount.x}
-                                        y={tick.releasedAmount.y}
-                                        initial={{ opacity: 0, y: -20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.5, duration: 0.4 }}
-                                        color={"#111"}
-                                    >
-                                        Released: {tick.releasedAmount.label}
+                                        Released: ($1000)
                                     </motion.text>
                                 </g>
-                            );
-                        })}
-                        <motion.line
-                            x1="0"
-                            y1={processedSvg.yScale}
-                            y2={processedSvg.yScale}
-                            className="stroke-slate-400"
-                            style={{ strokeDasharray: "10 5" }}
-                            initial={{ opacity: 0, strokeDasharray: "0", x2: 0 }}
-                            animate={{
-                                opacity: 1,
-                                strokeDasharray: "10 5",
-                                x2: processedSvg.DIMENSIONS.width,
-                            }}
-                            transition={{ duration: 0.4 }}
-                        />
-                        <motion.rect
-                            height={processedSvg.rectSize}
-                            x="0"
-                            y={processedSvg.yMiddle}
-                            rx="20"
-                            ry="20"
-                            fill="#cdcdce21"
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: processedSvg.DIMENSIONS.width }}
-                            transition={{ duration: 0.4, delay: 0.4 }}
-                        />
-                        <Popover
-                            overlayClassName="max-w-sm"
-                            content={
-                                <p>
-                                    Total Released:$2000 <br />
-                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui
-                                    praesentium sapiente, cupiditate vel natus accusantium
-                                    officia at soluta fuga et?
-                                </p>
-                            }
-                        >
+                            </Popover>
                             <g>
                                 <motion.rect
                                     height={processedSvg.rectSize}
-                                    x={processedSvg?.releasedAmount?.[0]}
+                                    x={processedSvg?.escrowedAmount?.[0]}
                                     y={processedSvg.yMiddle}
                                     rx="10"
                                     ry="10"
-                                    fill="#44ce44"
+                                    fill="orange"
                                     initial={{ opacity: 0, width: 0 }}
                                     animate={{
                                         opacity: 1,
                                         width:
-                                            Number(processedSvg.releasedAmount?.[1]) -
-                                            Number(processedSvg?.releasedAmount[0]),
+                                            Number(processedSvg.escrowedAmount?.[1]) -
+                                            Number(processedSvg?.escrowedAmount[0]),
                                     }}
-                                    transition={{ duration: 0.4, delay: 0.8 }}
+                                    transition={{ duration: 0.4, delay: 1.6 }}
                                 />
                                 <motion.text
                                     // TODO: Instead We can use Lerp here
                                     x={
-                                        (Number(processedSvg.releasedAmount?.[1]) -
-                                            Number(processedSvg?.releasedAmount[0])) /
+                                        (Number(processedSvg.escrowedAmount?.[1]) -
+                                            Number(processedSvg?.escrowedAmount[0])) /
                                         2 +
-                                        Number(processedSvg?.releasedAmount[0])
+                                        Number(processedSvg?.escrowedAmount[0])
                                     }
                                     y={processedSvg.yScale}
                                     fontFamily="Arial"
@@ -303,52 +346,15 @@ function AgentMilestone() {
                                     textAnchor="middle"
                                     initial={{ opacity: 0, y: -20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.4, delay: 1.2 }}
+                                    transition={{ duration: 0.4, delay: 2 }}
                                 >
-                                    Released: ($1000)
+                                    Escrowed: ($1000)
                                 </motion.text>
                             </g>
-                        </Popover>
-                        <g>
-                            <motion.rect
-                                height={processedSvg.rectSize}
-                                x={processedSvg?.escrowedAmount?.[0]}
-                                y={processedSvg.yMiddle}
-                                rx="10"
-                                ry="10"
-                                fill="orange"
-                                initial={{ opacity: 0, width: 0 }}
-                                animate={{
-                                    opacity: 1,
-                                    width:
-                                        Number(processedSvg.escrowedAmount?.[1]) -
-                                        Number(processedSvg?.escrowedAmount[0]),
-                                }}
-                                transition={{ duration: 0.4, delay: 1.6 }}
-                            />
-                            <motion.text
-                                // TODO: Instead We can use Lerp here
-                                x={
-                                    (Number(processedSvg.escrowedAmount?.[1]) -
-                                        Number(processedSvg?.escrowedAmount[0])) /
-                                    2 +
-                                    Number(processedSvg?.escrowedAmount[0])
-                                }
-                                y={processedSvg.yScale}
-                                fontFamily="Arial"
-                                fontSize="16"
-                                fill="black"
-                                textAnchor="middle"
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: 2 }}
-                            >
-                                Escrowed: ($1000)
-                            </motion.text>
-                        </g>
-                    </>
-                )}
-            </svg>
+                        </>
+                    )}
+                </svg>
+            </div>
         </div>
     );
 }

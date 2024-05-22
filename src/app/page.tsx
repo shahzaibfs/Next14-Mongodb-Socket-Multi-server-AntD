@@ -1,24 +1,41 @@
 import AgentMilestone from '@/components/charts/agent-milestone'
+import LinearTimeLogs from '@/components/charts/linear-time-logs';
 import MonthlyHourlyLogs from '@/components/charts/monthly-hourly-logs'
 import React from 'react'
 
 export default function Home() {
   return (
-    <main className='p-4 md:p-16'>
-      <div className='p-4 border rounded-md bg-slate-200'>
-        <AgentMilestone />
-      </div>
+    <main className='p-4 md:p-16 bg-slate-400'>
+      <AgentMilestone classNames='p-4 border rounded-md bg-white  xlmd:aspect-auto xl:min-h-[378px]' />
       <br />
-      <div className='p-4 border rounded-md bg-slate-200'>
-        <MonthlyHourlyLogs in_outs={Sample1} key={1} />
-      </div>
-      <br />
-      <div className='p-4 border rounded-md bg-slate-200'>
-        <MonthlyHourlyLogs in_outs={Sample2} key={2} />
+      <div className='xl:grid xl:grid-cols-3 gap-5'>
+        <MonthlyHourlyLogs in_outs={Sample1} key={1} classNames='p-4 col-span-2 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
+        <br className='xl:hidden' />
+        <LinearTimeLogs data={data2} key={2} classNames='p-4 col-span-1 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
       </div>
     </main>
   )
 }
+
+const data = [
+  { date: "2024-05-17T00:00:00.000Z", value: 65 },
+  { date: "2024-05-18T00:00:00.000Z", value: 30 },
+  { date: "2024-05-19T00:00:00.000Z", value: 45 },
+  { date: "2024-05-20T00:00:00.000Z", value: 75 },
+  { date: "2024-05-21T00:00:00.000Z", value: 50 },
+  { date: "2024-05-22T00:00:00.000Z", value: 20 },
+  { date: "2024-05-23T00:00:00.000Z", value: 60 }
+];
+
+const data2 = [
+  { date: "2024-05-17T00:00:00.000Z", value: 20 },
+  { date: "2024-05-18T00:00:00.000Z", value: 10 },
+  { date: "2024-05-19T00:00:00.000Z", value: 40 },
+  { date: "2024-05-20T00:00:00.000Z", value: 70 },
+  { date: "2024-05-21T00:00:00.000Z", value: 35 },
+  { date: "2024-05-22T00:00:00.000Z", value: 28 },
+  { date: "2024-05-23T00:00:00.000Z", value: 48 }
+];
 const Sample2 = [
   {
     "in": "2024-01-01T08:00:00",
