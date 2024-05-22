@@ -56,7 +56,7 @@ function AgentMilestone() {
             bottom: 10,
         };
 
-        let DIMENSIONS = {
+        const DIMENSIONS = {
             width: width ?? 0,
             height: height ?? 0,
         };
