@@ -32,6 +32,16 @@ interface ProcessedSvg {
             y: number;
             label: string;
         };
+        milestone: {
+            x: number;
+            y: number;
+            label: string;
+        };
+        releasedAmount: {
+            x: number;
+            y: number;
+            label: string;
+        }
     }[];
     DIMENSIONS: {
         width: number;
@@ -130,6 +140,20 @@ function AgentMilestone() {
                         y: MARGINS.top + MARGINS.bottom * 2,
                         label: "$1000",
                     },
+                    milestone: {
+                        x:
+                            (xScale(endOfMonth(date)) - xScale(startOfMonth(date))) / 2 +
+                            xScale(date),
+                        y: (yMiddle + rectSize) + 20,
+                        label: `Milestone ${idx + 1}`,
+                    },
+                    releasedAmount: {
+                        x:
+                            (xScale(endOfMonth(date)) - xScale(startOfMonth(date))) / 2 +
+                            xScale(date),
+                        y: yMiddle - 10,
+                        label: `$400`,
+                    },
                 };
             }),
             DIMENSIONS,
@@ -137,7 +161,7 @@ function AgentMilestone() {
         setProcessedSvg(processedSvg);
     }
     return (
-        <div className="min-w-screen overflow-auto" style={{ height: 250 }}>
+        <div className="min-w-screen overflow-auto" style={{ height: 300 }}>
             <svg ref={ref} width={"100%"} height={"100%"} className="min-w-[768px]">
                 {processedSvg && (
                     <>
@@ -146,13 +170,6 @@ function AgentMilestone() {
                                 <g key={tick.text.label}>
                                     {tick.lines && (
                                         <>
-                                            <text
-                                                textAnchor="middle"
-                                                x={tick.amount.x}
-                                                y={tick.amount.y}
-                                            >
-                                                {tick.amount.label}
-                                            </text>
                                             {tick.lines.map((line) => {
                                                 return (
                                                     <motion.line
@@ -173,6 +190,18 @@ function AgentMilestone() {
                                     )}
                                     <motion.text
                                         textAnchor="middle"
+                                        x={tick.amount.x}
+                                        y={tick.amount.y}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.5, duration: 0.4 }}
+                                        fill={"#715d5d"}
+
+                                    >
+                                        {tick.amount.label}
+                                    </motion.text>
+                                    <motion.text
+                                        textAnchor="middle"
                                         x={tick.text.x}
                                         y={tick.text.y}
                                         initial={{ opacity: 0, y: -20 }}
@@ -180,6 +209,28 @@ function AgentMilestone() {
                                         transition={{ delay: 0.5, duration: 0.4 }}
                                     >
                                         {tick.text.label}
+                                    </motion.text>
+                                    <motion.text
+                                        textAnchor="middle"
+                                        x={tick.milestone.x}
+                                        y={tick.milestone.y}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.5, duration: 0.4 }}
+                                        fill={"#715d5d"}
+                                    >
+                                        {tick.milestone.label}
+                                    </motion.text>
+                                    <motion.text
+                                        textAnchor="middle"
+                                        x={tick.releasedAmount.x}
+                                        y={tick.releasedAmount.y}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.5, duration: 0.4 }}
+                                        color={"#111"}
+                                    >
+                                        Released: {tick.releasedAmount.label}
                                     </motion.text>
                                 </g>
                             );
