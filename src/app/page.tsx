@@ -5,15 +5,15 @@ import React from 'react'
 export default function Home() {
   return (
     <main className='p-4 md:p-16'>
-      <div className='p-4 border rounded-md bg-slate-50'>
+      <div className='p-4 border rounded-md bg-slate-200'>
         <AgentMilestone />
       </div>
       <br />
-      <div className='p-4 border rounded-md bg-slate-50'>
+      <div className='p-4 border rounded-md bg-slate-200'>
         <MonthlyHourlyLogs in_outs={Sample1} key={1} />
       </div>
       <br />
-      <div className='p-4 border rounded-md bg-slate-50'>
+      <div className='p-4 border rounded-md bg-slate-200'>
         <MonthlyHourlyLogs in_outs={Sample2} key={2} />
       </div>
     </main>
