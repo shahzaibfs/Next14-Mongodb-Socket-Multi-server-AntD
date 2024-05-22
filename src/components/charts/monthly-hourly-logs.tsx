@@ -1,11 +1,10 @@
 "use client";
 import * as d3 from "d3";
-import { Popover } from "antd";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
 import { ReactNode, useEffect, useState } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
-import { endOfDay, endOfHour, endOfMonth, endOfWeek, format, getDaysInMonth, parseISO, startOfDay, startOfHour, startOfMonth, startOfWeek } from "date-fns";
+import { endOfDay, endOfHour, endOfWeek, format, parseISO, startOfDay, startOfHour, startOfWeek } from "date-fns";
 
 interface ProcessedSvg {
     xTicks: {

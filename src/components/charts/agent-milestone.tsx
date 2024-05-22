@@ -6,7 +6,6 @@ import useMeasure from "react-use-measure";
 import { ReactNode, useEffect, useState } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
 import { endOfMonth, format, startOfMonth } from "date-fns";
-import classNames from "classnames";
 
 interface ProcessedSvg {
     releasedAmount: number[];

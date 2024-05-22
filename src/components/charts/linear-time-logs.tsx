@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
 import { ReactNode, useEffect, useState } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
-import { endOfDay, endOfHour, endOfMonth, format, getDaysInMonth, parseISO, startOfDay, startOfHour, startOfMonth, subDays } from "date-fns";
+import { format, parseISO, startOfDay, subDays } from "date-fns";
 
 interface ProcessedSvg {
     xTicks: {
@@ -177,7 +177,7 @@ function LinearTimeLogs({
                                 </g>
                             })}
                             {processedSvg.logs.map(((log, idx) => {
-                                return <g>
+                                return <g key={idx}>
                                     <motion.rect
                                         width={log.width}
                                         x={log.x}
