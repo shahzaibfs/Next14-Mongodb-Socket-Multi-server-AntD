@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import { Popover } from "antd";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
 import { endOfMonth, format, startOfMonth } from "date-fns";
 
@@ -49,7 +49,7 @@ interface ProcessedSvg {
     };
 }
 
-function AgentMilestone({ classNames, children }: {
+function AgentMilestone({ classNames }: {
     children?: ReactNode,
     classNames?: string
 }) {
@@ -169,7 +169,7 @@ function AgentMilestone({ classNames, children }: {
                 <svg ref={ref} width={"100%"} height={"100%"} style={{ minHeight: 300, minWidth: 768 }}>
                     {processedSvg && (
                         <>
-                            {processedSvg.XAxis.map((tick, idx) => {
+                            {processedSvg.XAxis.map((tick) => {
                                 return (
                                     <g key={tick.text.label}>
                                         {tick.lines && (

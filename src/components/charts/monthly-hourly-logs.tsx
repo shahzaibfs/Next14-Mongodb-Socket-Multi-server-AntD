@@ -2,7 +2,7 @@
 import * as d3 from "d3";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
 import { endOfDay, endOfHour, endOfWeek, format, parseISO, startOfDay, startOfHour, startOfWeek } from "date-fns";
 
@@ -52,7 +52,6 @@ const MARGINS = {
 
 function MonthlyHourlyLogs({
     in_outs,
-    children,
     classNames
 }: {
     in_outs: { in: string, out: string }[];
