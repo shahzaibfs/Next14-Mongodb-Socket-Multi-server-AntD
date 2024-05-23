@@ -7,6 +7,8 @@ import { type ReactNode, useEffect, useState } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
 import { endOfMonth, format, startOfMonth } from "date-fns";
 
+const AnimationFrame = 0.2
+
 interface ProcessedSvg {
     releasedAmount: number[];
     escrowedAmount: number[];
@@ -61,7 +63,7 @@ function AgentMilestone({ classNames }: {
     }, [height, width]);
 
     function initD3Data() {
-        const NO_OF_TICKS = 4;
+        const NO_OF_TICKS = 5;
         const MARGINS = {
             left: 55,
             right: 60,
@@ -82,7 +84,7 @@ function AgentMilestone({ classNames }: {
             .scaleTime()
             .domain([
                 startOfMonth(new Date(2024, 0, 1)),
-                endOfMonth(new Date(2024, 3, 1)),
+                endOfMonth(new Date(2024, 5, 1)),
             ])
             .range([MARGINS.left, DIMENSIONS.width - MARGINS.right]);
 
@@ -186,7 +188,7 @@ function AgentMilestone({ classNames }: {
                                                             style={{ strokeDasharray: "10 5" }}
                                                             initial={{ opacity: 0, strokeDasharray: "0" }}
                                                             animate={{ opacity: 1, strokeDasharray: "10 5" }}
-                                                            transition={{ duration: 0.4 }}
+                                                            transition={{ duration: AnimationFrame }}
                                                         />
                                                     );
                                                 })}
@@ -198,7 +200,7 @@ function AgentMilestone({ classNames }: {
                                             y={tick.amount.y}
                                             initial={{ opacity: 0, y: -20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.5, duration: 0.4 }}
+                                            transition={{ delay: 0.3, duration: AnimationFrame }}
                                             fill={"#715d5d"}
 
                                         >
@@ -210,7 +212,7 @@ function AgentMilestone({ classNames }: {
                                             y={tick.text.y}
                                             initial={{ opacity: 0, y: -20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.5, duration: 0.4 }}
+                                            transition={{ delay: 0.3, duration: AnimationFrame }}
                                         >
                                             {tick.text.label}
                                         </motion.text>
@@ -220,7 +222,7 @@ function AgentMilestone({ classNames }: {
                                             y={tick.milestone.y}
                                             initial={{ opacity: 0, y: -20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.5, duration: 0.4 }}
+                                            transition={{ delay: 0.3, duration:AnimationFrame }}
                                             fill={"#715d5d"}
                                         >
                                             {tick.milestone.label}
@@ -231,7 +233,7 @@ function AgentMilestone({ classNames }: {
                                             y={tick.releasedAmount.y}
                                             initial={{ opacity: 0, y: -20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.5, duration: 0.4 }}
+                                            transition={{ delay: 0.3, duration: AnimationFrame}}
                                             color={"#111"}
                                         >
                                             Released: {tick.releasedAmount.label}
@@ -251,7 +253,7 @@ function AgentMilestone({ classNames }: {
                                     strokeDasharray: "10 5",
                                     x2: processedSvg.DIMENSIONS.width,
                                 }}
-                                transition={{ duration: 0.4 }}
+                                transition={{ duration: AnimationFrame }}
                             />
                             <motion.rect
                                 height={processedSvg.rectSize}
@@ -262,7 +264,7 @@ function AgentMilestone({ classNames }: {
                                 fill="#cdcdce21"
                                 initial={{ opacity: 0, width: 0 }}
                                 animate={{ opacity: 1, width: processedSvg.DIMENSIONS.width }}
-                                transition={{ duration: 0.4, delay: 0.4 }}
+                                transition={{ duration: 0.4, delay:AnimationFrame}}
                             />
                             <Popover
                                 overlayClassName="max-w-sm"
@@ -290,7 +292,7 @@ function AgentMilestone({ classNames }: {
                                                 Number(processedSvg.releasedAmount?.[1]) -
                                                 Number(processedSvg?.releasedAmount[0]),
                                         }}
-                                        transition={{ duration: 0.4, delay: 0.8 }}
+                                        transition={{ duration: AnimationFrame , delay: 0.8 }}
                                     />
                                     <motion.text
                                         // TODO: Instead We can use Lerp here
@@ -307,7 +309,7 @@ function AgentMilestone({ classNames }: {
                                         textAnchor="middle"
                                         initial={{ opacity: 0, y: -20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.4, delay: 1.2 }}
+                                        transition={{ duration: AnimationFrame, delay: 1.2 }}
                                     >
                                         Released: ($1000)
                                     </motion.text>
@@ -328,7 +330,7 @@ function AgentMilestone({ classNames }: {
                                             Number(processedSvg.escrowedAmount?.[1]) -
                                             Number(processedSvg?.escrowedAmount[0]),
                                     }}
-                                    transition={{ duration: 0.4, delay: 1.6 }}
+                                    transition={{ duration: AnimationFrame, delay: 1.6 }}
                                 />
                                 <motion.text
                                     // TODO: Instead We can use Lerp here
@@ -345,7 +347,7 @@ function AgentMilestone({ classNames }: {
                                     textAnchor="middle"
                                     initial={{ opacity: 0, y: -20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.4, delay: 2 }}
+                                    transition={{ duration: AnimationFrame, delay: 2 }}
                                 >
                                     Escrowed: ($1000)
                                 </motion.text>

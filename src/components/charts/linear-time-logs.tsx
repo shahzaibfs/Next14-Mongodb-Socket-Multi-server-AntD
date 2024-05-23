@@ -119,14 +119,20 @@ function LinearTimeLogs({
             logs: data.map(({ date, value }, idx) => {
                 const y = yScale(value);
                 const height = DIMENSIONS.height - MARGINS.bottom - y;
+                const x = xScale(startOfDay(parseISO(date)));
+
+                if (x < MARGINS.left || x > (DIMENSIONS.width - MARGINS.right)) {
+                    return null
+                }
+
                 return {
                     width: 7,
-                    x: xScale(startOfDay(parseISO(date))),
+                    x,
                     date: parseISO(date),
                     y: y,
                     height: height,
                 }
-            })
+            }).filter((d): d is NonNullable<typeof d> => d !== null)
         };
 
         setProcessedSvg(processedSvg);
