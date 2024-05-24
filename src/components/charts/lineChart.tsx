@@ -35,7 +35,6 @@ function LineChart({
 
     const processedSvg = useMemo(() => {
         if (!options.ticks || options.timeframe?.length !== 2) throw Error("Provide Details.")
-        console.log(options)
         const [timeStart, timeEnd] = options.timeframe;
 
         if (!(timeStart instanceof Date) || !(timeEnd instanceof Date)) {
@@ -103,7 +102,6 @@ function LineChart({
 
     }, [height, width, options, data])
 
-    console.log({ processedSvg })
 
     if (!processedSvg) return "loading...."
 

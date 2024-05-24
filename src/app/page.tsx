@@ -1,14 +1,57 @@
-import AgentMilestone from '@/components/charts/agent-milestone'
+"use client"
+import AgentMilestone, { data } from '@/components/charts/agent-milestone'
 import LineChart from '@/components/charts/lineChart';
 import LinearTimeLogs from '@/components/charts/linear-time-logs';
 import MonthlyHourlyLogs from '@/components/charts/monthly-hourly-logs'
-import { endOfMonth, startOfMonth, sub, subMonths } from 'date-fns';
+import { add, endOfMonth, startOfMonth, sub, subMonths } from 'date-fns';
 import React from 'react'
 
+const today = new Date()
+
+
+
+const agentMilestone: data = {
+  job: {
+    startTime: sub(today, { months: 2 }),
+    endTime: add(today, { months: 6 })
+  },
+  total: {
+    escrowed: "$6,000",
+    released: "$4,145",
+  },
+  released: [
+    {
+      month: sub(today, { months: 2 }),
+      escrowTime: "$1400.00",
+      relased_amount: "$1400",
+    },
+    {
+      month: sub(today, { months: 1 }),
+      escrowTime: "$1355.00",
+      relased_amount: "$2745",
+    }
+  ],
+  escrowed: [
+    {
+      month: today,
+      escrow_amount: "$3000",
+      working_hours_amount_current: "$1355"
+    },
+    {
+      month: add(today, { months: 1 }),
+      escrow_amount: "$3000",
+      working_hours_amount_current: null
+    }
+  ]
+}
+
 export default function Home() {
+
+  console.log({ agentMilestone })
+
   return (
     <main className='p-4 md:p-16 bg-slate-400'>
-      <AgentMilestone classNames='p-4 border rounded-md bg-white md:aspect-auto xl:min-h-[378px]' />
+      <AgentMilestone data={agentMilestone} classNames='p-4 border rounded-md bg-white md:aspect-auto xl:min-h-[378px]' />
       <br />
       <div className='xl:grid xl:grid-cols-3 gap-5'>
         <MonthlyHourlyLogs in_outs={hourlyLogs} key={1} classNames='p-4 col-span-2 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
@@ -32,7 +75,7 @@ export default function Home() {
 const chatLineChart = [
   {
     "name": "Discount Storage Insurance",
-    "color": "blue",
+    "color": "#FF6F61",
     "lines": [
       { "dateTime": "2023-12-01T00:00:00Z", "value": 100 },
       { "dateTime": "2024-01-01T00:00:00Z", "value": 150 },
@@ -44,7 +87,7 @@ const chatLineChart = [
   },
   {
     "name": "Second Dataset",
-    "color": "green",
+    "color": "#6699CC",
     "lines": [
       { "dateTime": "2023-12-01T00:00:00Z", "value": 50 },
       { "dateTime": "2024-01-01T00:00:00Z", "value": 100 },
@@ -56,7 +99,7 @@ const chatLineChart = [
   },
   {
     "name": "Third Dataset",
-    "color": "red",
+    "color": "#FFD700",
     "lines": [
       { "dateTime": "2023-12-01T00:00:00Z", "value": 200 },
       { "dateTime": "2024-01-01T00:00:00Z", "value": 250 },
@@ -67,8 +110,6 @@ const chatLineChart = [
     ]
   }
 ];
-
-
 const linearTimeLogs = [
   { date: "2024-05-17T00:00:00.000Z", value: 20 },
   { date: "2024-05-18T00:00:00.000Z", value: 10 },
@@ -344,3 +385,6 @@ const hourlyLogs = [
     "out": "2024-01-31T08:40:00"
   }
 ];
+
+
+
