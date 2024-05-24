@@ -77,8 +77,8 @@ function AgentMilestone({ classNames, data }: {
         const yScale = DIMENSIONS.height / 2;
         const yMiddle = yScale - rectSize / 2;
 
-        let releasedAmount: number[] = [];
-        let escrowedAmount: number[] = [];
+        const releasedAmount: number[] = [];
+        const escrowedAmount: number[] = [];
 
         // extract released amount.
         data.released.forEach((d) => {
