@@ -1,6 +1,8 @@
 import AgentMilestone from '@/components/charts/agent-milestone'
+import LineChart from '@/components/charts/lineChart';
 import LinearTimeLogs from '@/components/charts/linear-time-logs';
 import MonthlyHourlyLogs from '@/components/charts/monthly-hourly-logs'
+import { endOfMonth, startOfMonth, sub, subMonths } from 'date-fns';
 import React from 'react'
 
 export default function Home() {
@@ -9,16 +11,65 @@ export default function Home() {
       <AgentMilestone classNames='p-4 border rounded-md bg-white md:aspect-auto xl:min-h-[378px]' />
       <br />
       <div className='xl:grid xl:grid-cols-3 gap-5'>
-        <MonthlyHourlyLogs in_outs={Sample1} key={1} classNames='p-4 col-span-2 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
+        <MonthlyHourlyLogs in_outs={hourlyLogs} key={1} classNames='p-4 col-span-2 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
         <br className='xl:hidden' />
-        <LinearTimeLogs data={data2} key={2} classNames='p-4 col-span-1 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
+        <LinearTimeLogs data={linearTimeLogs} key={2} classNames='p-4 col-span-1 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
       </div>
+      <br />
+      <div className='bg-white'>
+        <LineChart
+          data={chatLineChart}
+          options={{
+            ticks: 6,
+            timeframe: [startOfMonth(sub(new Date(), { months: 5 })), startOfMonth(new Date())]
+          }} />
+      </div >
+
     </main>
   )
 }
 
+const chatLineChart = [
+  {
+    "name": "Discount Storage Insurance",
+    "color": "blue",
+    "lines": [
+      { "dateTime": "2023-12-01T00:00:00Z", "value": 100 },
+      { "dateTime": "2024-01-01T00:00:00Z", "value": 150 },
+      { "dateTime": "2024-02-01T00:00:00Z", "value": 200 },
+      { "dateTime": "2024-03-01T00:00:00Z", "value": 250 },
+      { "dateTime": "2024-04-01T00:00:00Z", "value": 50 },
+      { "dateTime": "2024-05-01T00:00:00Z", "value": 10 }
+    ]
+  },
+  {
+    "name": "Second Dataset",
+    "color": "green",
+    "lines": [
+      { "dateTime": "2023-12-01T00:00:00Z", "value": 50 },
+      { "dateTime": "2024-01-01T00:00:00Z", "value": 100 },
+      { "dateTime": "2024-02-01T00:00:00Z", "value": 150 },
+      { "dateTime": "2024-03-01T00:00:00Z", "value": 200 },
+      { "dateTime": "2024-04-01T00:00:00Z", "value": 250 },
+      { "dateTime": "2024-05-01T00:00:00Z", "value": 200 }
+    ]
+  },
+  {
+    "name": "Third Dataset",
+    "color": "red",
+    "lines": [
+      { "dateTime": "2023-12-01T00:00:00Z", "value": 200 },
+      { "dateTime": "2024-01-01T00:00:00Z", "value": 250 },
+      { "dateTime": "2024-02-01T00:00:00Z", "value": 150 },
+      { "dateTime": "2024-03-01T00:00:00Z", "value": 100 },
+      { "dateTime": "2024-04-01T00:00:00Z", "value": 50 },
+      { "dateTime": "2024-05-01T00:00:00Z", "value": 20 }
+    ]
+  }
+];
 
-const data2 = [
+
+const linearTimeLogs = [
   { date: "2024-05-17T00:00:00.000Z", value: 20 },
   { date: "2024-05-18T00:00:00.000Z", value: 10 },
   { date: "2024-05-19T00:00:00.000Z", value: 40 },
@@ -27,10 +78,7 @@ const data2 = [
   { date: "2024-05-22T00:00:00.000Z", value: 28 },
   { date: "2024-05-23T00:00:00.000Z", value: 48 }
 ];
-
-
-
-const Sample1 = [
+const hourlyLogs = [
   {
     "in": "2024-01-01T07:45:00",
     "out": "2024-01-01T08:15:00"

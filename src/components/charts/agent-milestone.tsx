@@ -57,7 +57,7 @@ function AgentMilestone({ classNames }: {
 }) {
     const [processedSvg, setProcessedSvg] = useState<ProcessedSvg | null>(null);
     const [ref, { height, width }] = useMeasure();
-    console.log({ height, width })
+    
     useEffect(() => {
         initD3Data();
     }, [height, width]);
