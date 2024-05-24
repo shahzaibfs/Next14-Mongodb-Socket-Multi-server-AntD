@@ -136,7 +136,6 @@ function LinearTimeLogs({
         };
 
         setProcessedSvg(processedSvg);
-        console.log({ LinearTime: processedSvg })
     }
     return (
         <div className={`grid ${classNames}`}>
