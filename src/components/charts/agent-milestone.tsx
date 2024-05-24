@@ -39,6 +39,7 @@ const MARGINS = {
     bottom: 10,
 };
 
+
 function AgentMilestone({ classNames, data }: {
     children?: ReactNode,
     classNames?: string,
@@ -198,7 +199,7 @@ function AgentMilestone({ classNames, data }: {
                                                             y1={line.y1}
                                                             x2={line.x2}
                                                             y2={line.y2}
-                                                            className="stroke-slate-400"
+                                                            stroke={"#3CB9BC82"}
                                                             style={{ strokeDasharray: "10 5" }}
                                                             initial={{ opacity: 0, strokeDasharray: "0" }}
                                                             animate={{ opacity: 1, strokeDasharray: "10 5" }}
@@ -273,7 +274,7 @@ function AgentMilestone({ classNames, data }: {
                                 x1="0"
                                 y1={processedSvg.yScale}
                                 y2={processedSvg.yScale}
-                                className="stroke-slate-400"
+                                stroke={"#3CB9BC82"}
                                 style={{ strokeDasharray: "10 5" }}
                                 initial={{ opacity: 0, strokeDasharray: "0", x2: 0 }}
                                 animate={{
