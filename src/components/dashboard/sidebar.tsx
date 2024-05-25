@@ -1,11 +1,10 @@
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { FC, ReactNode, useCallback, useMemo, useState } from 'react'
+import { FC, ReactNode, useCallback, useState } from 'react';
 import { IconType } from 'react-icons';
 
-import { FaHome, FaUser, FaCog, FaFolder, FaFile, FaChartLine, FaShoppingCart, FaInfoCircle, FaPhone, FaEnvelope, FaArrowDown } from 'react-icons/fa';
+import { FaHome, FaUser, FaCog, FaFolder, FaFile, FaChartLine, FaShoppingCart, FaInfoCircle, FaPhone, FaEnvelope } from 'react-icons/fa';
 import { MdKeyboardArrowRight, MdOutlineKeyboardArrowDown } from 'react-icons/md';
-import Resizable from '../animations/resizable';
 import Fade from '../animations/fade';
 
 interface Link {
