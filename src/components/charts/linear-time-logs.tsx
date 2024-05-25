@@ -97,11 +97,11 @@ function LinearTimeLogs({
                     axis: {
                         x: xScale(date),
                         y: DIMENSIONS.height,
-                        label: format(date, "E")
+                        label: format(date, DIMENSIONS.width > 768 ? "EEE" : "EEEEE")
                     }
                 }
             }),
-            yTicks: yScale.ticks(5).map((n) => {
+            yTicks: yScale.ticks(3).map((n) => {
                 return {
                     line: {
                         x1: MARGINS.left,

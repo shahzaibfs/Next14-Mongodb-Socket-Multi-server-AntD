@@ -1,10 +1,13 @@
 "use client"
-import AgentMilestone, { data } from '@/components/charts/agent-milestone'
+import AgentMilestone, { data } from '@/components/charts/agent-milestone';
 import LineChart from '@/components/charts/lineChart';
 import LinearTimeLogs from '@/components/charts/linear-time-logs';
-import MonthlyHourlyLogs from '@/components/charts/monthly-hourly-logs'
-import { add, endOfMonth, startOfMonth, sub, subMonths } from 'date-fns';
-import React from 'react'
+import MonthlyHourlyLogs from '@/components/charts/monthly-hourly-logs';
+import Sidebar from '@/components/dashboard/sidebar';
+import { Button } from 'antd';
+import classNames from 'classnames';
+import { add, startOfMonth, sub } from 'date-fns';
+import { useState } from 'react';
 
 const today = new Date()
 
@@ -46,27 +49,40 @@ const agentMilestone: data = {
 }
 
 export default function Home() {
-
-  console.log({ agentMilestone })
-
+  const [open, setOpen] = useState(false);
+  // please refactor this create Good sidebar i just bin the things here hehehe
   return (
-    <main className='p-4 md:p-16 bg-slate-400'>
-      <AgentMilestone data={agentMilestone} classNames='p-4 border rounded-md bg-white md:aspect-auto xl:min-h-[378px]' />
-      <br />
-      <div className='xl:grid xl:grid-cols-3 gap-5'>
-        <MonthlyHourlyLogs in_outs={hourlyLogs} key={1} classNames='p-4 col-span-2 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
-        <br className='xl:hidden' />
-        <LinearTimeLogs data={linearTimeLogs} key={2} classNames='p-4 col-span-1 pb-8 border rounded-md bg-white aspect-video xl:aspect-auto xl:min-h-[378px]' />
+    <main className='p-5 md:flex gap-5'>
+
+      <div className={
+        classNames(
+          open && "translate-x-0 min-w-[280px] transition-all",
+          !open && " -translate-x-[150%] hidden",
+          "overflow-hidden rounded-md bg-white"
+        )
+      }>
+        <Sidebar />
       </div>
-      <br />
-      <div className='bg-white'>
-        <LineChart
-          data={chatLineChart}
-          options={{
-            ticks: 6,
-            timeframe: [startOfMonth(sub(new Date(), { months: 5 })), startOfMonth(new Date())]
-          }} />
-      </div >
+
+      <div className='flex-grow'>
+        <Button className='mb-5 mt-1' onClick={() => setOpen(!open)}>{open ? "Close" : "Open"}</Button>
+
+        <AgentMilestone data={agentMilestone} classNames='p-4   border rounded-md bg-white md:aspect-auto xl:min-h-[378px]' />
+        <br />
+        <div className='md:grid md:grid-cols-2 gap-5'>
+          <MonthlyHourlyLogs in_outs={hourlyLogs} key={1} classNames='pb-8 col-span-1  border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]' />
+          <br className='md:hidden' />
+          <LinearTimeLogs data={linearTimeLogs} key={2} classNames='pb-8 col-span-1   border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]' />
+          <br className='md:hidden' />
+          <LineChart
+            classNames='col-span-1 pb-2 border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]'
+            data={chatLineChart}
+            options={{
+              ticks: 6,
+              timeframe: [startOfMonth(sub(new Date(), { months: 5 })), startOfMonth(new Date())]
+            }} />
+        </div>
+      </div>
 
     </main>
   )

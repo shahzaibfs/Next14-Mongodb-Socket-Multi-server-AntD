@@ -9,6 +9,7 @@ import withErrorBoundary from '@/hocs/with-error-boundry';
 function LineChart({
     data,
     options,
+    classNames
 }: {
     data: {
         name: string,
@@ -29,6 +30,7 @@ function LineChart({
         }
     };
     children?: React.ReactNode;
+    classNames?: string
 }) {
     const [ref, { height, width }] = useMeasure();
 
@@ -69,10 +71,10 @@ function LineChart({
                 return {
                     x,
                     y: (height - margins.bottom) + 4,
-                    label: format(dateTime, "MMM")
+                    label: format(dateTime, width > 768 ? "MMM" : "MMMMM")
                 }
             }),
-            yAxis: yScale.ticks(options.ticks).map(value => {
+            yAxis: yScale.ticks(height/100).map(value => {
                 const y = yScale(value);
                 return {
                     y,
@@ -106,96 +108,98 @@ function LineChart({
     if (!processedSvg) return "loading...."
 
     return (
-        <div>
-            <svg ref={ref} width={"100%"} height={400} >
-                {processedSvg.xAxis.map(tick => {
-                    return <g key={tick.label}>
-                        <motion.text
-                            textAnchor={"middle"}
-                            x={tick.x}
-                            y={tick.y}
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5, duration: 0.4 }}
-                        >
-                            {tick.label}
-                        </motion.text>
-                    </g>
-                })}
-                {processedSvg.yAxis.map(tick => {
-                    return <g key={tick.label}>
-                        <motion.text
-                            x={tick.x}
-                            y={tick.y}
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5, duration: 0.4 }}
-                        >
-                            {tick.label}
-                        </motion.text>
-                    </g>
-                })}
-                <motion.line
-                    x1={processedSvg.margins.left}
-                    x2={width - processedSvg.margins.right}
-                    y1={height - processedSvg.margins.bottom * 2}
-                    y2={height - processedSvg.margins.bottom * 2}
-                    stroke={"#B4B4B4"}
-                />
-                <motion.line
-                    x2={processedSvg.margins.left}
-                    x1={processedSvg.margins.left}
-                    y1={processedSvg.margins.top}
-                    y2={height - processedSvg.margins.bottom * 2}
-                    stroke={"#B4B4B4"}
-                />
-                {
-                    processedSvg.data.map((data, idx) => {
-                        return <g key={idx}>
-                            <defs>
-                                <linearGradient id={`areaGradient${idx}`} x1="0%" y1="0%" x2="0%" y2="50%">
-                                    <stop offset="0%" stopColor={data.color} />
-                                    <stop offset="100%" stopColor="white" />
-                                </linearGradient>
-                            </defs>
-                            <path d={data.line} fill='transparent' stroke={data.color} />
-                            <path d={data.area} fill={`url(#areaGradient${idx}`} className='opacity-5' />
-                            {
-                                data.shapes.map((d, idx) => {
-                                    return <g key={d.x}>
-                                        {
-                                            idx > 0 && <motion.line
-                                                x2={d.x}
-                                                x1={d.x}
-                                                y1={d.y}
-                                                y2={height - processedSvg.margins.bottom * 2}
-                                                stroke={"#B4B4B4"}
-                                                strokeDasharray={"10 5"}
-                                            />
-                                        }
-                                        <circle
-                                            r={9.81 / 2}
-                                            cx={d.x}
-                                            cy={d.y}
-                                            stroke={data.color}
-                                            strokeWidth={5}
-                                            fill={"white"}
-                                        />
-                                        <circle
-                                            r={9.81 / 2}
-                                            cx={d.x}
-                                            cy={d.y}
-                                            stroke='white'
-                                            strokeWidth={2}
-                                            fill={data.color}
-                                        />
-                                    </g>
-                                })
-                            })
+        <div className={`grid ${classNames}`}>
+            <div className="min-w-full overflow-auto w-full h-full" >
+                <svg ref={ref} width={"100%"} height={"100%"} className="">
+                    {processedSvg.xAxis.map(tick => {
+                        return <g key={tick.label}>
+                            <motion.text
+                                textAnchor={"middle"}
+                                x={tick.x}
+                                y={tick.y}
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5, duration: 0.4 }}
+                            >
+                                {tick.label}
+                            </motion.text>
                         </g>
-                    })
-                }
-            </svg>
+                    })}
+                    {processedSvg.yAxis.map(tick => {
+                        return <g key={tick.label}>
+                            <motion.text
+                                x={tick.x}
+                                y={tick.y}
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5, duration: 0.4 }}
+                            >
+                                {tick.label}
+                            </motion.text>
+                        </g>
+                    })}
+                    <motion.line
+                        x1={processedSvg.margins.left}
+                        x2={width - processedSvg.margins.right}
+                        y1={height - processedSvg.margins.bottom * 2}
+                        y2={height - processedSvg.margins.bottom * 2}
+                        stroke={"#B4B4B4"}
+                    />
+                    <motion.line
+                        x2={processedSvg.margins.left}
+                        x1={processedSvg.margins.left}
+                        y1={processedSvg.margins.top}
+                        y2={height - processedSvg.margins.bottom * 2}
+                        stroke={"#B4B4B4"}
+                    />
+                    {
+                        processedSvg.data.map((data, idx) => {
+                            return <g key={idx}>
+                                <defs>
+                                    <linearGradient id={`areaGradient${idx}`} x1="0%" y1="0%" x2="0%" y2="50%">
+                                        <stop offset="0%" stopColor={data.color} />
+                                        <stop offset="100%" stopColor="white" />
+                                    </linearGradient>
+                                </defs>
+                                <path d={data.line} fill='transparent' stroke={data.color} />
+                                <path d={data.area} fill={`url(#areaGradient${idx}`} className='opacity-5' />
+                                {
+                                    data.shapes.map((d, idx) => {
+                                        return <g key={d.x}>
+                                            {
+                                                idx > 0 && <motion.line
+                                                    x2={d.x}
+                                                    x1={d.x}
+                                                    y1={d.y}
+                                                    y2={height - processedSvg.margins.bottom * 2}
+                                                    stroke={"#B4B4B4"}
+                                                    strokeDasharray={"10 5"}
+                                                />
+                                            }
+                                            <circle
+                                                r={9.81 / 2}
+                                                cx={d.x}
+                                                cy={d.y}
+                                                stroke={data.color}
+                                                strokeWidth={5}
+                                                fill={"white"}
+                                            />
+                                            <circle
+                                                r={9.81 / 2}
+                                                cx={d.x}
+                                                cy={d.y}
+                                                stroke='white'
+                                                strokeWidth={2}
+                                                fill={data.color}
+                                            />
+                                        </g>
+                                    })
+                                })
+                            </g>
+                        })
+                    }
+                </svg>
+            </div>
         </div>
     )
 }

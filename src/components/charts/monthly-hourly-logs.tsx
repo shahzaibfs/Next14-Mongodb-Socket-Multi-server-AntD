@@ -84,7 +84,7 @@ function MonthlyHourlyLogs({
             .range([DIMENSIONS.height - MARGINS.top, MARGINS.bottom])
 
         const processedSvg = {
-            xTicks: xScale.ticks(DIMENSIONS.width <= 768 ? 6 : 14).map((date) => {
+            xTicks: xScale.ticks(DIMENSIONS.width /100).map((date) => {
                 return {
                     axis: {
                         x: xScale(date),
@@ -93,7 +93,7 @@ function MonthlyHourlyLogs({
                     }
                 }
             }),
-            yTicks: yScale.ticks(6).map((date) => {
+            yTicks: yScale.ticks(Math.min(DIMENSIONS.height/40,14)).map((date) => {
                 return {
                     tickLine: {
                         x1: MARGINS.left, x2: DIMENSIONS.width - MARGINS.right, y1: yScale(date), y2: yScale(date)

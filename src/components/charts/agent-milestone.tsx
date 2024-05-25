@@ -3,9 +3,9 @@ import * as d3 from "d3";
 import { Popover } from "antd";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
-import { type ReactNode, useEffect, useState, useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
-import { endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
+import { differenceInMonths, endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
 import { FaInfoCircle } from "react-icons/fa";
 import GroupSvg from "../group-svg";
 
@@ -31,7 +31,6 @@ export interface data {
     }[]
 }
 
-const NO_OF_TICKS = 8;
 const MARGINS = {
     left: 55,
     right: 60,
@@ -59,6 +58,7 @@ function AgentMilestone({ classNames, data }: {
         if (!DIMENSIONS.height || !DIMENSIONS.width) return null;
 
         DIMENSIONS.height += -MARGINS.top - MARGINS.bottom;
+        const NO_OF_TICKS = Math.min(DIMENSIONS.width / 180, 8);
 
         const xScale = d3
             .scaleTime()
@@ -161,7 +161,7 @@ function AgentMilestone({ classNames, data }: {
                             (xScale(endOfMonth(date)) - xScale(startOfMonth(date))) / 2 +
                             xScale(date),
                         y: (yMiddle + rectSize) + 20,
-                        label: `Milestone ${idx + 1}`,
+                        label: `Milestone ${differenceInMonths(date,data.job.startTime)+1}`,
                     },
                     releasedAmount: {
                         x:
@@ -183,7 +183,7 @@ function AgentMilestone({ classNames, data }: {
     return (
         <div className={`grid ${classNames}`}>
             <div className="min-w-full overflow-auto w-full h-full" >
-                <svg ref={ref} width={"100%"} height={"100%"} style={{ minHeight: 300, minWidth: 768 }}>
+                <svg ref={ref} width={"100%"} height={"100%"} style={{ minHeight: 250, minWidth: 552 }}>
                     {processedSvg && (
                         <>
                             {processedSvg.XAxis.map((tick) => {

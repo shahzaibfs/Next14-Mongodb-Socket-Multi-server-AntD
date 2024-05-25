@@ -55,7 +55,7 @@ function Calender({
             <div className="w-full">
                 <div className="">
                     <div className="px-2 flex items-center justify-between">
-                        <DirectionAware id={currentMonth} direction={direction} >
+                        <DirectionAware initial={false} id={currentMonth} direction={direction} >
                             <span className="focus:outline-none whitespace-nowrap  text-base font-bold dark:text-gray-100 text-gray-800 underline">{currentMonth}</span>
                         </DirectionAware>
                         <div className="flex items-center">
@@ -65,10 +65,9 @@ function Calender({
                             <button onClick={goNextmonth} aria-label="calendar forward" className="focus:text-gray-400 hover:text-gray-400 ml-3 text-gray-800 dark:text-gray-100">
                                 <FaChevronRight />
                             </button>
-
                         </div>
                     </div>
-                    <DirectionAware id={currentMonth} direction={direction}  >
+                    <DirectionAware initial={false} id={currentMonth} direction={direction}  >
                         <div className="flex items-center justify-between pt-8 ">
                             <table className="w-full">
                                 <thead className=''>

@@ -8,11 +8,11 @@ const fadeFrames = {
     exit: { opacity: 0 },
 };
 
-function Fade({ children, onAnimationComplete }: { children: ReactNode, onAnimationComplete?: () => void }) {
+function Fade({ children, onAnimationComplete, initial = true }: { initial?: boolean; children: ReactNode, onAnimationComplete?: () => void }) {
     return (
-        <AnimatePresence initial={true} mode='popLayout' >
+        <AnimatePresence initial={initial} mode='popLayout'>
             <motion.div
-                key={JSON.stringify(children, ignoreCircularReferences())}
+                key={useStableKey(children)}
                 initial="initial"
                 animate="animate"
                 exit="exit"
@@ -28,19 +28,16 @@ function Fade({ children, onAnimationComplete }: { children: ReactNode, onAnimat
 
 export default withErrorBoundary(Fade);
 
-/*
-  Replacer function to JSON.stringify that ignores
-  circular references and internal React properties.
-  https://github.com/facebook/react/issues/8669#issuecomment-531515508
-*/
-const ignoreCircularReferences = () => {
-    const seen = new WeakSet();
-    return (key: string, value: any) => {
-        if (key.startsWith('_')) return; // Don't compare React's internal props.
-        if (typeof value === 'object' && value !== null) {
-            if (seen.has(value)) return;
-            seen.add(value);
-        }
-        return value;
-    };
+const useStableKey = (children: ReactNode) => {
+    return React.useMemo(() => {
+        const seen = new WeakSet();
+        return JSON.stringify(children, (key, value) => {
+            if (key.startsWith('_')) return;
+            if (typeof value === 'object' && value !== null) {
+                if (seen.has(value)) return;
+                seen.add(value);
+            }
+            return value;
+        });
+    }, [children]);
 };
