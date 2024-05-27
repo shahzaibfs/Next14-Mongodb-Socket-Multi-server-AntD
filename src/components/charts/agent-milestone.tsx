@@ -3,11 +3,12 @@ import * as d3 from "d3";
 import { Popover } from "antd";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState, useRef } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
 import { differenceInMonths, endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
 import { FaInfoCircle } from "react-icons/fa";
 import GroupSvg from "../group-svg";
+import { prettyPrintJson } from 'pretty-print-json';
 
 const AnimationFrame = 0.2
 export interface data {
@@ -44,8 +45,9 @@ function AgentMilestone({ classNames, data }: {
     classNames?: string,
     data: data
 }) {
-    const [ref, { height, width }] = useMeasure();
-
+    const [ref, { height, width, top, left }] = useMeasure();
+    const [tooltipOptions, setToolTipOptions] = useState<null | { x: number, y: number }>(null)
+    const svgWrapper = useRef<any>(null)
 
     const processedSvg = useMemo(() => {
         if (!data) throw Error("Please Provide valid data. AGENT MILESTONE.")
@@ -138,6 +140,11 @@ function AgentMilestone({ classNames, data }: {
                 })
 
                 return {
+                    raw: {
+                        releasedMonth,
+                        escrowedMonth
+                    },
+                    escrowedMonth,
                     lines: lines,
                     text: {
                         raw: startOfMonth(date),
@@ -148,8 +155,6 @@ function AgentMilestone({ classNames, data }: {
                         label: format(date, "MMM (yyyy)"),
                     },
                     amount: {
-                        releasedMonth,
-                        escrowedMonth,
                         x:
                             (xScale(endOfMonth(date)) - xScale(startOfMonth(date))) / 2 +
                             xScale(date),
@@ -161,15 +166,13 @@ function AgentMilestone({ classNames, data }: {
                             (xScale(endOfMonth(date)) - xScale(startOfMonth(date))) / 2 +
                             xScale(date),
                         y: (yMiddle + rectSize) + 20,
-                        label: `Milestone ${differenceInMonths(date,data.job.startTime)+1}`,
+                        label: `Milestone ${differenceInMonths(date, data.job.startTime) + 1}`,
                     },
                     releasedAmount: {
                         x:
                             (xScale(endOfMonth(date)) - xScale(startOfMonth(date))) / 2 +
                             xScale(date),
                         y: yMiddle - 10,
-                        releasedMonth,
-                        escrowedMonth,
                         label: releasedMonth?.relased_amount ?? "Nill",
                     },
                 };
@@ -180,10 +183,41 @@ function AgentMilestone({ classNames, data }: {
 
     }, [data, width, height])
 
+    const handleMouseMove = (e: any) => {
+        setToolTipOptions({
+            x: e.clientX as number - left,
+            y: e.clientY as number - top
+        })
+    }
+
+    const tooltipData = useMemo(() => {
+        if (!tooltipOptions || !processedSvg) return null
+        const { x, y } = tooltipOptions
+        let closestDistance = Number.MAX_VALUE;
+        let closestDataPoint = null;
+
+        processedSvg?.XAxis.forEach((tick) => {
+            const distance = Math.sqrt(Math.pow(x - tick.text.x, 2) + Math.pow(y - tick.text.y, 2));
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestDataPoint = tick;
+            }
+        });
+
+        const { raw }: any = closestDataPoint;
+        if (!raw?.escrowedMonth && !raw?.releasedMonth) return null
+        return {
+            escrowAmount: raw?.escrowedMonth,
+            releasedAmount: raw?.releasedMonth
+        };
+
+    }, [tooltipOptions, processedSvg])
+
     return (
-        <div className={`grid ${classNames}`}>
-            <div className="min-w-full overflow-auto w-full h-full" >
-                <svg ref={ref} width={"100%"} height={"100%"} style={{ minHeight: 250, minWidth: 552 }}>
+        <div className={`grid ${classNames}`} >
+            <div className="min-w-full overflow-auto w-full h-full"   >
+                <svg ref={ref} width={"100%"} height={"100%"} style={{ minHeight: 250, minWidth: 552 }} onMouseLeave={() => setToolTipOptions(null)} onMouseMove={handleMouseMove} >
                     {processedSvg && (
                         <>
                             {processedSvg.XAxis.map((tick) => {
@@ -210,6 +244,7 @@ function AgentMilestone({ classNames, data }: {
                                             </>
                                         )}
                                         <motion.text
+                                            fontSize={width < 768 ? "12" : "14"}
                                             textAnchor="middle"
                                             x={tick.amount.x}
                                             y={tick.amount.y}
@@ -222,6 +257,7 @@ function AgentMilestone({ classNames, data }: {
                                             {tick.amount.label}
                                         </motion.text>
                                         <motion.text
+                                            fontSize={width < 768 ? "12" : "14"}
                                             textAnchor="middle"
                                             x={tick.text.x}
                                             y={tick.text.y}
@@ -232,6 +268,7 @@ function AgentMilestone({ classNames, data }: {
                                             {tick.text.label}
                                         </motion.text>
                                         <motion.text
+                                            fontSize={width < 768 ? "12" : "14"}
                                             textAnchor="middle"
                                             x={tick.milestone.x}
                                             y={tick.milestone.y}
@@ -247,6 +284,7 @@ function AgentMilestone({ classNames, data }: {
                                             y: tick.releasedAmount.y
                                         }}>
                                             <motion.text
+                                                fontSize={width < 768 ? "12" : "14"}
                                                 textAnchor="end"
                                                 initial={{ opacity: 0, y: -20 }}
                                                 animate={{ opacity: 1, y: 0 }}
@@ -256,11 +294,11 @@ function AgentMilestone({ classNames, data }: {
                                                 {tick.releasedAmount.label}
                                             </motion.text>
                                             {
-                                                tick.releasedAmount.escrowedMonth?.working_hours_amount_current &&
+                                                tick.raw.escrowedMonth?.working_hours_amount_current &&
                                                 <Popover overlayClassName="max-w-xs" content={
                                                     <div>
                                                         <p><b>Amount Escrowed: </b>{tick.amount.label}</p>
-                                                        <p><b className="text-[#1DBF73]">Amount by Working Hours: </b>{tick.releasedAmount.escrowedMonth?.working_hours_amount_current}</p>
+                                                        <p><b className="text-[#1DBF73]">Amount by Working Hours: </b>{tick.raw.escrowedMonth?.working_hours_amount_current}</p>
                                                     </div>
                                                 }>
                                                     <FaInfoCircle x={8} y={-12} className="cursor-pointer" />
@@ -296,6 +334,7 @@ function AgentMilestone({ classNames, data }: {
                                 transition={{ duration: 0.4, delay: AnimationFrame }}
                             />
 
+
                             {/* -------------->  Released Rect && text */}
                             <g>
                                 <motion.rect
@@ -324,14 +363,14 @@ function AgentMilestone({ classNames, data }: {
                                     }
                                     y={processedSvg.yScale + 4}
                                     fontFamily="Arial"
-                                    fontSize="16"
+                                    fontSize={width < 768 ? "12" : "14"}
                                     fill="white"
                                     textAnchor="middle"
                                     initial={{ opacity: 0, y: -20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: AnimationFrame, delay: 1.2 }}
                                 >
-                                    Released: ({processedSvg?.totalAmounts?.released})
+                                    {width < 768 ? "R" : "Released"}: ({processedSvg?.totalAmounts?.released})
                                 </motion.text>
                             </g>
                             {/* -------------->  Escrowed Rect && text */}
@@ -362,16 +401,27 @@ function AgentMilestone({ classNames, data }: {
                                     }
                                     y={processedSvg.yScale + 4}
                                     fontFamily="Arial"
-                                    fontSize="16"
+                                    fontSize={width < 768 ? "12" : "14"}
                                     fill="white"
                                     textAnchor="middle"
                                     initial={{ opacity: 0, y: -20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: AnimationFrame, delay: 2 }}
                                 >
-                                    Escrowed: ({processedSvg?.totalAmounts?.escrowed})
+                                    {width < 768 ? "E" : " Escrowed"}: ({processedSvg?.totalAmounts?.escrowed})
                                 </motion.text>
                             </g>
+                            {
+                                tooltipOptions && <>
+                                    <line x1={0} x2={width} y1={tooltipOptions.y} y2={tooltipOptions.y} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
+                                    <line x1={tooltipOptions.x} x2={tooltipOptions.x} y1={0} y2={height} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
+                                    <Popover open={!!tooltipData} overlayClassName="max-w-sm" content={tooltipData && <>
+                                        <div dangerouslySetInnerHTML={{ __html: prettyPrintJson.toHtml(tooltipData, { indent: 10, linksNewTab: true, trailingCommas: true, lineNumbers: true }) }} />
+                                    </>}>
+                                        <circle r={5} cx={tooltipOptions.x} cy={tooltipOptions.y} />
+                                    </Popover>
+                                </>
+                            }
                         </>
                     )}
                 </svg>
