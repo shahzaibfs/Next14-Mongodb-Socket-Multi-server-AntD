@@ -6,7 +6,7 @@ import MonthlyHourlyLogs from '@/components/charts/monthly-hourly-logs';
 import Sidebar from '@/components/dashboard/sidebar';
 import { Button } from 'antd';
 import classNames from 'classnames';
-import { add, startOfMonth, sub } from 'date-fns';
+import { add, parseISO, startOfMonth, sub } from 'date-fns';
 import { useState } from 'react';
 
 const today = new Date()
@@ -70,7 +70,10 @@ export default function Home() {
         <AgentMilestone data={agentMilestone} classNames='p-4   border rounded-md bg-white md:aspect-auto xl:min-h-[378px]' />
         <br />
         <div className='md:grid md:grid-cols-2 gap-5'>
-          <MonthlyHourlyLogs in_outs={hourlyLogs} key={1} classNames='pb-8 col-span-1  border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]' />
+          <MonthlyHourlyLogs in_outs={hourlyLogs.map(d => ({
+            in: parseISO(d.in),
+            out: parseISO(d.out)
+          }))} key={1} classNames='pb-8 col-span-1  border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]' />
           <br className='md:hidden' />
           <LinearTimeLogs data={linearTimeLogs} key={2} classNames='pb-8 col-span-1   border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]' />
           <br className='md:hidden' />
