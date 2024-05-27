@@ -2,46 +2,10 @@
 import * as d3 from "d3";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useMemo } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
-import { endOfDay, endOfHour, endOfWeek, format, parseISO, startOfDay, startOfHour, startOfWeek } from "date-fns";
+import { endOfDay, endOfHour, format, startOfDay, startOfHour } from "date-fns";
 
-interface ProcessedSvg {
-    xTicks: {
-        axis: {
-            x: number;
-            y: number;
-            label: string;
-        };
-    }[];
-    yTicks: {
-        tickLine: {
-            x1: number;
-            x2: number;
-            y1: number;
-            y2: number;
-        };
-        axis: {
-            x: number;
-            y: number;
-            label: string;
-        };
-    }[];
-    xStart: number;
-    DIMENSIONS: {
-        width: number;
-        height: number;
-    };
-    logsDimensions: {
-        xStart: number;
-        xEnd: number;
-        inTime: Date;
-        outTime: Date;
-        width: number;
-        y: number;
-        label: string;
-    }[]
-}
 
 const MARGINS = {
     left: 80,
@@ -54,91 +18,99 @@ function MonthlyHourlyLogs({
     in_outs,
     classNames
 }: {
-    in_outs: { in: string, out: string }[];
+    in_outs: { in: Date, out: Date }[];
     children?: ReactNode;
     classNames?: string
 }) {
-    const [processedSvg, setProcessedSvg] = useState<ProcessedSvg | null>(null);
     const [ref, { height, width }] = useMeasure();
-    useEffect(() => {
-        initD3Data();
-    }, [height, width]);
+
+    const processedSvg = useMemo(() => {
+        try {
+            const DIMENSIONS = {
+                width: width ?? 0,
+                height: height ?? 0,
+            };
+            if (!DIMENSIONS.height || !DIMENSIONS.width) return null;
+
+            const minInDate = d3.min(in_outs, function (d) { return d.in; });
+            const maxOutDate = d3.max(in_outs, function (d) { return d.out; });
+
+            if (!minInDate || !maxOutDate) return null
+
+            // we just need 24 hour format here ......
+            const xScale = d3.scaleTime()
+                .domain([
+                    startOfDay(minInDate),
+                    endOfDay(minInDate)
+                ])
+                .range([MARGINS.left, DIMENSIONS.width - MARGINS.right]);
 
 
-    function initD3Data() {
-        const DIMENSIONS = {
-            width: width ?? 0,
-            height: height ?? 0,
-        };
-        if (!DIMENSIONS.height || !DIMENSIONS.width) return null;
-
-        const todayMonth = new Date(2024, 0, 16)
-
-        const xScale = d3.scaleTime()
-            .domain([startOfDay(todayMonth), endOfDay(todayMonth)])
-            .range([MARGINS.left, DIMENSIONS.width - MARGINS.right])
+            const yScale = d3.scaleTime()
+                .domain([startOfDay(minInDate), endOfDay(maxOutDate)])
+                .range([DIMENSIONS.height - MARGINS.top, MARGINS.bottom])
 
 
-        const yScale = d3.scaleTime()
-            .domain([startOfWeek(todayMonth), endOfWeek(todayMonth)])
-            .range([DIMENSIONS.height - MARGINS.top, MARGINS.bottom])
-
-        const processedSvg = {
-            xTicks: xScale.ticks(DIMENSIONS.width /100).map((date) => {
-                return {
-                    axis: {
-                        x: xScale(date),
-                        y: DIMENSIONS.height - MARGINS.top * 0.2,
-                        label: format(date, "H") + "h"
+            return {
+                xTicks: xScale.ticks(DIMENSIONS.width / 100).map((date) => {
+                    return {
+                        axis: {
+                            x: xScale(date),
+                            y: DIMENSIONS.height - MARGINS.top * 0.2,
+                            label: format(date, "H") + "h"
+                        }
                     }
-                }
-            }),
-            yTicks: yScale.ticks(Math.min(DIMENSIONS.height/40,14)).map((date) => {
-                return {
-                    tickLine: {
-                        x1: MARGINS.left, x2: DIMENSIONS.width - MARGINS.right, y1: yScale(date), y2: yScale(date)
-                    },
-                    axis: {
-                        x: MARGINS.left - MARGINS.bottom,
-                        y: ((yScale(endOfHour(date)) + yScale(startOfHour(date))) / 2),
-                        label: format(date, "dd MMM")
+                }),
+                yTicks: yScale.ticks(Math.min(DIMENSIONS.height / 40, 14)).map((date) => {
+                    return {
+                        tickLine: {
+                            x1: MARGINS.left, x2: DIMENSIONS.width - MARGINS.right, y1: yScale(date), y2: yScale(date)
+                        },
+                        axis: {
+                            x: MARGINS.left - MARGINS.bottom,
+                            y: ((yScale(endOfHour(date)) + yScale(startOfHour(date))) / 2),
+                            label: format(date, "dd MMM")
+                        }
                     }
-                }
-            }),
-            xStart: MARGINS.left,
-            DIMENSIONS,
-            logsDimensions: in_outs.map((log) => {
+                }),
+                xStart: MARGINS.left,
+                DIMENSIONS,
+                logsDimensions: in_outs.map((log) => {
 
-                const inTime = parseISO(log.in)
-                const outTime = parseISO(log.out)
+                    const inTime = log.in
+                    const outTime = log.out
 
-                // Used to get the dynamic Px values based on different dates timezones
-                const logXScale = d3.scaleTime()
-                    .domain([startOfDay(inTime), endOfDay(outTime)])
-                    .range([MARGINS.left, DIMENSIONS.width - MARGINS.right]);
+                    // Used to get the dynamic Px values based on different dates timezones
+                    const logXScale = d3.scaleTime()
+                        .domain([startOfDay(inTime), endOfDay(outTime)])
+                        .range([MARGINS.left, DIMENSIONS.width - MARGINS.right]);
 
-                const _xStart = logXScale(inTime);
-                const xEnd = logXScale(outTime);
-                const y = yScale(inTime);
+                    const _xStart = logXScale(inTime);
+                    const xEnd = logXScale(outTime);
+                    const y = yScale(inTime);
 
-                if (y < MARGINS.bottom || y > DIMENSIONS.height - MARGINS.top) {
-                    return null;
-                }
+                    if (y < MARGINS.bottom || y > DIMENSIONS.height - MARGINS.top) {
+                        return null;
+                    }
 
-                return {
-                    xStart: _xStart,
-                    xEnd,
-                    inTime,
-                    outTime,
-                    width: xEnd - _xStart,
-                    y: y,
-                    label: `${format(inTime, "dd-MMM HH:MM:ss a")}-${format(outTime, "dd-MMM HH:MM:ss a")}`
-                }
-            }).filter((d): d is NonNullable<typeof d> => d !== null)
-        };
+                    return {
+                        xStart: _xStart,
+                        xEnd,
+                        inTime,
+                        outTime,
+                        width: xEnd - _xStart,
+                        y: y,
+                        label: `${format(inTime, "dd-MMM HH:MM:ss a")}-${format(outTime, "dd-MMM HH:MM:ss a")}`
+                    }
+                }).filter((d): d is NonNullable<typeof d> => d !== null)
+            };
+        } catch (error) {
+            console.log({ error })
+            return null
+        }
+    }, [width, height, in_outs]);
 
-        setProcessedSvg(processedSvg);
-    }
+    if (!in_outs) return null
     return (
 
         <div className={` ${classNames}`}>
