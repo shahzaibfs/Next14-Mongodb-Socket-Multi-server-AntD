@@ -130,13 +130,13 @@ const chatLineChart = [
   }
 ];
 const linearTimeLogs = [
-  { date: "2024-05-17T00:00:00.000Z", value: 20 },
-  { date: "2024-05-18T00:00:00.000Z", value: 10 },
-  { date: "2024-05-19T00:00:00.000Z", value: 40 },
-  { date: "2024-05-20T00:00:00.000Z", value: 70 },
-  { date: "2024-05-21T00:00:00.000Z", value: 35 },
-  { date: "2024-05-22T00:00:00.000Z", value: 28 },
-  { date: "2024-05-23T00:00:00.000Z", value: 48 }
+  { date: parseISO("2024-05-17T00:00:00.000Z"), value: 20 },
+  { date: parseISO("2024-05-18T00:00:00.000Z"), value: 10 },
+  { date: parseISO("2024-05-19T00:00:00.000Z"), value: 40 },
+  { date: parseISO("2024-05-20T00:00:00.000Z"), value: 70 },
+  { date: parseISO("2024-05-21T00:00:00.000Z"), value: 35 },
+  { date: parseISO("2024-05-22T00:00:00.000Z"), value: 28 },
+  { date: parseISO("2024-05-23T00:00:00.000Z"), value: 48 }
 ];
 const hourlyLogs = [
   {
