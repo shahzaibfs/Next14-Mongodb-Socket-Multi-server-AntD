@@ -2,9 +2,11 @@
 import * as d3 from "d3";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
-import { endOfDay, endOfHour, format, startOfDay, startOfHour } from "date-fns";
+import { differenceInSeconds, endOfDay, endOfHour, format, formatDistance, formatDuration, startOfDay, startOfHour } from "date-fns";
+import { Popover } from "antd";
+import { prettyPrintJson } from "pretty-print-json";
 
 
 const MARGINS = {
@@ -22,7 +24,9 @@ function MonthlyHourlyLogs({
     children?: ReactNode;
     classNames?: string
 }) {
-    const [ref, { height, width }] = useMeasure();
+    const [ref, { height, width, left, top }] = useMeasure();
+    const [tooltipOptions, setToolTipOptions] = useState<null | { x: number, y: number }>(null)
+
 
     const processedSvg = useMemo(() => {
         try {
@@ -110,10 +114,46 @@ function MonthlyHourlyLogs({
         }
     }, [width, height, in_outs]);
 
+    const handleMouseMove = (e: any) => {
+        setToolTipOptions({
+            x: e.clientX as number - left,
+            y: e.clientY as number - top
+        })
+    }
+
+    const tooltipData = useMemo(() => {
+        if (!tooltipOptions || !processedSvg) return null
+        const { x, y } = tooltipOptions
+        let closestDistance = Number.MAX_VALUE;
+        let closestDataPoint = null;
+
+        processedSvg.logsDimensions.forEach((dataPoint) => {
+            // I am using eucludian distance here. 
+            const distance = Math.sqrt(Math.pow((dataPoint.xStart + dataPoint.xEnd) / 2 - x, 2) + Math.pow(dataPoint.y - y, 2));
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestDataPoint = dataPoint;
+            }
+        });
+
+        if (!closestDataPoint) return null
+        const { xStart, xEnd, y: yStart, inTime, outTime }: any = closestDataPoint
+        return {
+            x: (xStart + xEnd) / 2,
+            y: yStart + 4,
+            data: {
+                inTime: format(inTime, "MM-dd yyyy (hh:mm:ss a)"),
+                outTime: format(outTime, "MM-dd yyyy (hh:mm:ss a)"),
+                TotalSpent: formatDistance(outTime, inTime)
+            }
+        }
+    }, [tooltipOptions, processedSvg])
+
     if (!in_outs) return null
+
     return (
 
-        <div className={` ${classNames}`}>
+        <div className={` ${classNames}`} onMouseLeave={() => setToolTipOptions(null)} onMouseMove={handleMouseMove}>
             <div className="overflow-auto w-full h-full" >
                 <svg ref={ref} width={"100%"} height={"100%"}>
                     {
@@ -186,6 +226,17 @@ function MonthlyHourlyLogs({
                                 y2={processedSvg.DIMENSIONS.height - MARGINS.top}
                                 className="stroke-slate-400"
                             />
+                        </>
+                    }
+                    {
+                        tooltipData && <>
+                            <line x1={0} x2={width} y1={tooltipData.y} y2={tooltipData.y} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
+                            <line x1={tooltipData.x} x2={tooltipData.x} y1={0} y2={height} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
+                            <Popover open={!!tooltipData} overlayClassName="max-w-sm" content={tooltipData && <>
+                                <div dangerouslySetInnerHTML={{ __html: prettyPrintJson.toHtml(tooltipData.data, { indent: 10, linksNewTab: true, trailingCommas: true, lineNumbers: true }) }} />
+                            </>}>
+                                <circle r={5} cx={tooltipData.x} cy={tooltipData.y} />
+                            </Popover>
                         </>
                     }
                 </svg>
