@@ -412,7 +412,6 @@ function AgentMilestone({ classNames, data }: {
                                     <line x1={0} x2={width} y1={tooltipOptions.y} y2={tooltipOptions.y} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
                                     <line x1={tooltipOptions.x} x2={tooltipOptions.x} y1={0} y2={height} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
                                     <Popover
-                                        key={`${tooltipData && (tooltipData?.x + tooltipData?.y)}`}
                                         open={!!tooltipData}
                                         overlayInnerStyle={{
                                             borderRadius: "12px",
