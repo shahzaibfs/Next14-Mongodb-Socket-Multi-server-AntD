@@ -2,9 +2,11 @@
 import * as d3 from "d3";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState, useRef } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
-import { endOfDay, endOfHour, format, startOfDay, startOfHour } from "date-fns";
+import { differenceInSeconds, endOfDay, endOfHour, format, formatDistance, formatDuration, startOfDay, startOfHour } from "date-fns";
+import { Popover, Table } from "antd";
+import { prettyPrintJson } from "pretty-print-json";
 
 
 const MARGINS = {
@@ -22,7 +24,9 @@ function MonthlyHourlyLogs({
     children?: ReactNode;
     classNames?: string
 }) {
-    const [ref, { height, width }] = useMeasure();
+    const [ref, { height, width, left, top }] = useMeasure();
+    const [tooltipOptions, setToolTipOptions] = useState<null | { x: number, y: number }>(null)
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
 
     const processedSvg = useMemo(() => {
         try {
@@ -75,7 +79,7 @@ function MonthlyHourlyLogs({
                 }),
                 xStart: MARGINS.left,
                 DIMENSIONS,
-                logsDimensions: in_outs.map((log) => {
+                logsDimensions: in_outs.map((log, idx) => {
 
                     const inTime = log.in
                     const outTime = log.out
@@ -94,6 +98,7 @@ function MonthlyHourlyLogs({
                     }
 
                     return {
+                        idx,
                         xStart: _xStart,
                         xEnd,
                         inTime,
@@ -110,12 +115,59 @@ function MonthlyHourlyLogs({
         }
     }, [width, height, in_outs]);
 
+    const handleMouseMove = (e: any) => {
+        if (!wrapperRef.current) return
+        const bounding = wrapperRef.current.getBoundingClientRect()
+
+        const offsetX = e.clientX - bounding.left;
+        const offsetY = e.clientY - bounding.top;
+
+        setToolTipOptions({
+            x: offsetX,
+            y: offsetY
+        })
+    }
+
+    const tooltipData = useMemo(() => {
+        if (!tooltipOptions || !processedSvg) return null
+        const { x, y } = tooltipOptions
+        let closestDistance = Number.MAX_VALUE;
+        let closestDataPoint = null;
+
+        processedSvg.logsDimensions.forEach((dataPoint) => {
+            // I am using eucludian distance here. 
+            const distance = Math.sqrt(Math.pow((dataPoint.xStart + dataPoint.xEnd) / 2 - x, 2) + Math.pow(dataPoint.y - y, 2));
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestDataPoint = dataPoint;
+            }
+        });
+
+        if (!closestDataPoint) return null
+        const { xStart, xEnd, y: yStart, inTime, outTime, idx } = closestDataPoint
+        return {
+            idx,
+            x: (Number(xStart) + Number(xEnd)) / 2,
+            y: Number(yStart) + 4,
+            data: {
+                inTime: format(inTime, "MM-dd yyyy (hh:mm:ss a)"),
+                outTime: format(outTime, "MM-dd yyyy (hh:mm:ss a)"),
+                TotalSpent: formatDistance(outTime, inTime)
+            }
+        }
+    }, [tooltipOptions, processedSvg])
+
+
     if (!in_outs) return null
+
     return (
 
-        <div className={` ${classNames}`}>
-            <div className="overflow-auto w-full h-full" >
-                <svg ref={ref} width={"100%"} height={"100%"}>
+        <div className={` ${classNames}`} >
+            <div ref={r => {
+                ref(r)
+                wrapperRef.current = r;
+            }} className="overflow-auto w-full h-full" onMouseLeave={() => setToolTipOptions(null)} onMouseMove={handleMouseMove}>
+                <svg width={"100%"} height={"100%"} >
                     {
                         processedSvg &&
                         <>
@@ -158,7 +210,7 @@ function MonthlyHourlyLogs({
                                 </g>
                             })}
                             {processedSvg.logsDimensions.map((log, idx) => {
-                                return <g key={log.label}>
+                                return <g key={`${log.label} ${idx}`}>
                                     <motion.rect
                                         height={10}
                                         x={log.xStart}
@@ -166,9 +218,17 @@ function MonthlyHourlyLogs({
                                         rx="20"
                                         ry="20"
                                         fill="#3CB9BC"
+                                        viewport={{ once: true }}
                                         initial={{ opacity: 0, width: 0 }}
-                                        animate={{ opacity: 1, width: log.width }}
-                                        transition={{ delay: 0.1 * idx, duration: 0.2 }}
+                                        animate={{
+                                            opacity: (tooltipData?.idx === idx || !tooltipData?.idx) ? 1 : 0.3, width: log.width
+                                        }}
+                                        exit={{
+                                            opacity: 0, width: 0
+                                        }}
+                                        transition={{
+                                            duration: 0.2
+                                        }}
                                     />
                                 </g>
                             })}
@@ -177,7 +237,7 @@ function MonthlyHourlyLogs({
                                 x2={processedSvg.xStart}
                                 y1={processedSvg.DIMENSIONS.height - MARGINS.top}
                                 y2={MARGINS.bottom}
-                                className="stroke-slate-400"
+                                className="stroke-slate-400 "
                             />
                             <motion.line
                                 x1={processedSvg.xStart}
@@ -186,6 +246,39 @@ function MonthlyHourlyLogs({
                                 y2={processedSvg.DIMENSIONS.height - MARGINS.top}
                                 className="stroke-slate-400"
                             />
+                        </>
+                    }
+                    {
+                        tooltipData && <>
+                            <line x1={0} x2={width} y1={tooltipData.y} y2={tooltipData.y} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
+                            <line x1={tooltipData.x} x2={tooltipData.x} y1={0} y2={height} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
+                            <Popover
+                                key={tooltipData.x + tooltipData.y}
+                                open={!!tooltipData}
+                                overlayClassName="max-w-sm rounded-md"
+                                overlayInnerStyle={{
+                                    borderRadius: "12px"
+                                }}
+                                content={tooltipData && <>
+                                    <Table
+                                        pagination={false}
+                                        columns={[
+                                            { title: "Time In", dataIndex: "in" },
+                                            { title: "Time Out", dataIndex: "out" },
+                                            { title: "total", dataIndex: "total", className: "whitespace-nowrap  " }
+                                        ]}
+                                        dataSource={[
+                                            {
+                                                in: tooltipData.data.inTime,
+                                                out: tooltipData.data.outTime,
+                                                total: tooltipData.data.TotalSpent
+                                            }
+                                        ]}
+                                    />
+                                </>}
+                            >
+                                <circle r={1} fill="#3CB9BC" cx={tooltipData.x} cy={tooltipData.y} />
+                            </Popover>
                         </>
                     }
                 </svg>

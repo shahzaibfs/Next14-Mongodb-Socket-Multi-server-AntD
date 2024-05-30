@@ -25,12 +25,12 @@ const agentMilestone: data = {
   released: [
     {
       month: sub(today, { months: 2 }),
-      escrowTime: "$1400.00",
+      escrow_amount: "$1400.00",
       relased_amount: "$1400",
     },
     {
       month: sub(today, { months: 1 }),
-      escrowTime: "$1355.00",
+      escrow_amount: "$1355.00",
       relased_amount: "$2745",
     }
   ],

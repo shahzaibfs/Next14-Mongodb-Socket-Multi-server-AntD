@@ -1,14 +1,12 @@
 "use client";
 import * as d3 from "d3";
-import { Popover } from "antd";
+import { Popover, Table, Tag } from "antd";
 import { motion } from "framer-motion";
 import useMeasure from "react-use-measure";
 import { type ReactNode, useMemo, useState, useRef } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
 import { differenceInMonths, endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
-import { FaInfoCircle } from "react-icons/fa";
 import GroupSvg from "../group-svg";
-import { prettyPrintJson } from 'pretty-print-json';
 
 const AnimationFrame = 0.2
 export interface data {
@@ -22,7 +20,7 @@ export interface data {
     },
     released: {
         month: Date;
-        escrowTime: string;
+        escrow_amount: string;
         relased_amount: string;
     }[];
     escrowed: {
@@ -47,7 +45,7 @@ function AgentMilestone({ classNames, data }: {
 }) {
     const [ref, { height, width, top, left }] = useMeasure();
     const [tooltipOptions, setToolTipOptions] = useState<null | { x: number, y: number }>(null)
-    const svgWrapper = useRef<any>(null)
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
 
     const processedSvg = useMemo(() => {
         if (!data) throw Error("Please Provide valid data. AGENT MILESTONE.")
@@ -159,7 +157,7 @@ function AgentMilestone({ classNames, data }: {
                             (xScale(endOfMonth(date)) - xScale(startOfMonth(date))) / 2 +
                             xScale(date),
                         y: MARGINS.top + MARGINS.bottom * 2,
-                        label: (releasedMonth ? releasedMonth.escrowTime : escrowedMonth?.escrow_amount) ?? "",
+                        label: (releasedMonth ? releasedMonth.escrow_amount : escrowedMonth?.escrow_amount) ?? "",
                     },
                     milestone: {
                         x:
@@ -182,14 +180,18 @@ function AgentMilestone({ classNames, data }: {
         };
 
     }, [data, width, height])
-
     const handleMouseMove = (e: any) => {
+        if (!wrapperRef.current) return
+        const bounding = wrapperRef.current.getBoundingClientRect()
+
+        const offsetX = e.clientX - bounding.left;
+        const offsetY = e.clientY - bounding.top;
+
         setToolTipOptions({
-            x: e.clientX as number - left,
-            y: e.clientY as number - top
+            x: offsetX,
+            y: offsetY
         })
     }
-
     const tooltipData = useMemo(() => {
         if (!tooltipOptions || !processedSvg) return null
         const { x, y } = tooltipOptions
@@ -208,6 +210,8 @@ function AgentMilestone({ classNames, data }: {
         const { raw }: any = closestDataPoint;
         if (!raw?.escrowedMonth && !raw?.releasedMonth) return null
         return {
+            x,
+            y,
             escrowAmount: raw?.escrowedMonth,
             releasedAmount: raw?.releasedMonth
         };
@@ -216,8 +220,11 @@ function AgentMilestone({ classNames, data }: {
 
     return (
         <div className={`grid ${classNames}`} >
-            <div className="min-w-full overflow-auto w-full h-full"   >
-                <svg ref={ref} width={"100%"} height={"100%"} style={{ minHeight: 250, minWidth: 552 }} onMouseLeave={() => setToolTipOptions(null)} onMouseMove={handleMouseMove} >
+            <div ref={r => {
+                ref(r)
+                wrapperRef.current = r;
+            }} className="min-w-full overflow-auto w-full h-full" onMouseLeave={() => setToolTipOptions(null)} onMouseMove={handleMouseMove} >
+                <svg width={"100%"} height={"100%"} style={{ minHeight: 250, minWidth: 552 }}  >
                     {processedSvg && (
                         <>
                             {processedSvg.XAxis.map((tick) => {
@@ -293,17 +300,6 @@ function AgentMilestone({ classNames, data }: {
                                             >
                                                 {tick.releasedAmount.label}
                                             </motion.text>
-                                            {
-                                                tick.raw.escrowedMonth?.working_hours_amount_current &&
-                                                <Popover overlayClassName="max-w-xs" content={
-                                                    <div>
-                                                        <p><b>Amount Escrowed: </b>{tick.amount.label}</p>
-                                                        <p><b className="text-[#1DBF73]">Amount by Working Hours: </b>{tick.raw.escrowedMonth?.working_hours_amount_current}</p>
-                                                    </div>
-                                                }>
-                                                    <FaInfoCircle x={8} y={-12} className="cursor-pointer" />
-                                                </Popover>
-                                            }
                                         </GroupSvg>
                                     </g>
                                 );
@@ -415,10 +411,23 @@ function AgentMilestone({ classNames, data }: {
                                 tooltipOptions && <>
                                     <line x1={0} x2={width} y1={tooltipOptions.y} y2={tooltipOptions.y} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
                                     <line x1={tooltipOptions.x} x2={tooltipOptions.x} y1={0} y2={height} stroke="#3CB9BC82" strokeWidth={2} strokeDasharray={"10 5"} />
-                                    <Popover open={!!tooltipData} overlayClassName="max-w-sm" content={tooltipData && <>
-                                        <div dangerouslySetInnerHTML={{ __html: prettyPrintJson.toHtml(tooltipData, { indent: 10, linksNewTab: true, trailingCommas: true, lineNumbers: true }) }} />
-                                    </>}>
-                                        <circle r={5} cx={tooltipOptions.x} cy={tooltipOptions.y} />
+                                    <Popover
+                                        key={`${tooltipData && (tooltipData?.x + tooltipData?.y)}`}
+                                        open={!!tooltipData}
+                                        overlayInnerStyle={{
+                                            borderRadius: "12px",
+                                        }}
+
+                                        content={tooltipData && <>
+                                            <Table
+                                                bordered={true}
+                                                pagination={false}
+                                                columns={getColumns(tooltipData)}
+                                                dataSource={getData(tooltipData)}
+                                            />
+                                        </>}
+                                    >
+                                        <circle r={3} cx={tooltipOptions.x} cy={tooltipOptions.y} />
                                     </Popover>
                                 </>
                             }
@@ -431,3 +440,48 @@ function AgentMilestone({ classNames, data }: {
 }
 
 export default withErrorBoundary(AgentMilestone);
+
+
+function getColumns(tData: any) {
+    if (tData?.escrowAmount) {
+        return [
+            { title: "Month", dataIndex: "month" },
+            { title: "Status", dataIndex: "status", render: (status: any) => <Tag color="orange">{status}</Tag> },
+            { title: "Escrow ", dataIndex: "escrow_amount" },
+            { title: "(By Working hrs)", dataIndex: "working_hours_amount_current", className: "whitespace-nowrap" },
+        ]
+    }
+    if (tData?.releasedAmount) {
+        return [
+            { title: "Month", dataIndex: "month" },
+            { title: "Status", dataIndex: "status", render: (status: any) => <Tag color="green">{status}</Tag> },
+            { title: "Escrow ", dataIndex: "escrow_amount" },
+            { title: "Released ", dataIndex: "relased_amount" },
+        ]
+    }
+    return []
+}
+function getData(tData: any): any[] {
+    const data = tData?.escrowAmount ?? tData?.releasedAmount
+    if (tData?.escrowAmount) {
+        return [
+            {
+                month: format(data?.month, "MMM-yyyy"),
+                status: "ESCROWED",
+                escrow_amount: data?.escrow_amount,
+                working_hours_amount_current: data?.working_hours_amount_current
+            },
+        ]
+    }
+    if (tData?.releasedAmount) {
+        return [
+            {
+                month: format(data?.month, "MMM-yyyy"),
+                status: "RELEASED",
+                escrow_amount: data?.escrow_amount,
+                relased_amount: data?.relased_amount
+            },
+        ]
+    }
+    return []
+}
