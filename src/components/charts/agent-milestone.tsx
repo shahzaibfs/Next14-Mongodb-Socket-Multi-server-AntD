@@ -6,9 +6,7 @@ import useMeasure from "react-use-measure";
 import { type ReactNode, useMemo, useState, useRef } from "react";
 import withErrorBoundary from "@/hocs/with-error-boundry";
 import { differenceInMonths, endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
-import { FaInfoCircle } from "react-icons/fa";
 import GroupSvg from "../group-svg";
-import { prettyPrintJson } from 'pretty-print-json';
 
 const AnimationFrame = 0.2
 export interface data {
