@@ -147,8 +147,8 @@ function MonthlyHourlyLogs({
         const { xStart, xEnd, y: yStart, inTime, outTime, idx } = closestDataPoint
         return {
             idx,
-            x: (xStart + xEnd) / 2,
-            y: yStart + 4,
+            x: (Number(xStart) + Number(xEnd)) / 2,
+            y: Number(yStart) + 4,
             data: {
                 inTime: format(inTime, "MM-dd yyyy (hh:mm:ss a)"),
                 outTime: format(outTime, "MM-dd yyyy (hh:mm:ss a)"),
