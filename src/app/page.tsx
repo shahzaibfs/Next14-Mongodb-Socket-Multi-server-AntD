@@ -3,6 +3,7 @@ import AgentMilestone, { data } from '@/components/charts/agent-milestone';
 import LineChart from '@/components/charts/lineChart';
 import LinearTimeLogs from '@/components/charts/linear-time-logs';
 import MonthlyHourlyLogs from '@/components/charts/monthly-hourly-logs';
+import ResponseTimeChart from '@/components/charts/response-time-chart';
 import Sidebar from '@/components/dashboard/sidebar';
 import { Button } from 'antd';
 import classNames from 'classnames';
@@ -77,19 +78,24 @@ export default function Home() {
           <br className='md:hidden' />
           <LinearTimeLogs data={linearTimeLogs} key={2} classNames='pb-8 col-span-1   border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]' />
           <br className='md:hidden' />
-          <LineChart
-            classNames='col-span-1 pb-2 border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]'
-            data={chatLineChart}
-            options={{
-              ticks: 6,
-              timeframe: [startOfMonth(sub(new Date(), { months: 5 })), startOfMonth(new Date())]
-            }} />
+          <ResponseTimeChart classNames='border  ' data={{ "Above 2min": 100, "10-2min": 50, "1-10s": 10 }} />
         </div>
       </div>
 
     </main>
   )
 }
+
+/**
+ * <LineChart
+            classNames='col-span-1 pb-2 border rounded-md bg-white aspect-[1] sm:aspect-video xl:aspect-auto xl:min-h-[378px]'
+            data={chatLineChart}
+            options={{
+              ticks: 6,
+              timeframe: [startOfMonth(sub(new Date(), { months: 5 })), startOfMonth(new Date())]
+            }} />
+ * 
+ */
 
 const chatLineChart = [
   {

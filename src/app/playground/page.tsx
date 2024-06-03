@@ -1,9 +1,9 @@
-"use client"
 import React from 'react'
 
-export default function Page() {
+function page() {
   return (
-    <div className='flex justify-center items-center p-16'>
-    </div >
+    <div>page</div>
   )
 }
+
+export default page
